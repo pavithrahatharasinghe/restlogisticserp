@@ -1,5 +1,7 @@
 package org.example.restlogisticserp.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
 
 public class User {
@@ -14,16 +16,22 @@ public class User {
     private String phoneNumber;
     private String profilePic;
     private boolean emailVerified;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp emailVerifiedAt;
     private String resetToken;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp resetTokenExpiresAt;
     private String status;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp lastLogin;
     private String accountType;
     private String language;
     private String timezone;
     private int companyId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp updatedAt;
 
     public User() {
@@ -71,7 +79,7 @@ public class User {
 
 
 
-    public long getUserId() {
+    public int getUserId() {
         return userId;
     }
 
@@ -223,7 +231,7 @@ public class User {
         this.timezone = timezone;
     }
 
-    public long getCompanyId() {
+    public int getCompanyId() {
         return companyId;
     }
 

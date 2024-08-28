@@ -234,5 +234,25 @@ public class InquiryDBUtils {
         inquiry.setCreatedBy(resultSet.getInt("created_by"));
         return inquiry;
     }
+
+    //search inquiry  companyID  and whereclause
+    public static List<Inquiry> searchInquiryByCompany(int companyId, String whereClause) {
+        String query = "SELECT * FROM Inquiries WHERE company_id = ? AND " + whereClause;
+        List<Inquiry> inquiries = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, companyId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Inquiry inquiry = mapResultSetToInquiry(resultSet);
+                inquiries.add(inquiry);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching inquiries by company", e);
+            throw new RuntimeException(e);
+        }
+        return inquiries;
+    }
 }
 

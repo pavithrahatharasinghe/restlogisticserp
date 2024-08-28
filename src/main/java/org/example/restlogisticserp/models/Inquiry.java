@@ -3,6 +3,8 @@ package org.example.restlogisticserp.models;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Inquiry {
 
     private int inquiryId;
@@ -21,13 +23,25 @@ public class Inquiry {
     private Boolean dangerousGoods;
     private String freightTerm;
     private String incoTerm;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date preferredDateOfArrival;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date preferredDateOfDeparture;
     private String preferredTransitPeriod;
-    private Timestamp cutOffTime;    // Change to Timestamp
+
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private Timestamp cutOffTime;
+
+
     private String status;
     private String publishedStatus;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp publishDate;   // Change to Timestamp
+
     private Boolean bidAccepted;     // Use Boolean for nullable boolean
     private Integer acceptedBidId;   // Changed from Long to Integer
     private int createdBy;           // Changed from Long to int

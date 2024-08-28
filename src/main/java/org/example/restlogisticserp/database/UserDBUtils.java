@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.mindrot.jbcrypt.*;
+
 public class UserDBUtils {
     private static final Logger logger = Logger.getLogger(UserDBUtils.class.getName());
     private static Connection connection;
@@ -53,32 +55,45 @@ public class UserDBUtils {
 
 
 
-    public static User authenticateUser(String email, String password) throws SQLException {
-        String query = "SELECT * FROM Users WHERE email = ? AND password = ?";
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, email);
-        statement.setString(2, password);
+    public static User authenticateUser(String email, String plainPassword) throws SQLException {
+        // SQL query to select user details based on the email
+        String query = "SELECT * FROM Users WHERE email = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
 
-        ResultSet resultSet = statement.executeQuery();
+            // Execute the query and get the result set
+            ResultSet resultSet = statement.executeQuery();
 
-        if (resultSet.next()) {
-            logger.info("User found with email: " + email);
-            return new User(
-                    resultSet.getInt("user_id"),
-                    resultSet.getString("email"),
-                    resultSet.getString("role"),
-                    resultSet.getString("first_name"),
-                    resultSet.getString("last_name"),
-                    resultSet.getString("title"),
-                    resultSet.getString("about_me"),
-                    resultSet.getString("phone_number"),
-                    resultSet.getString("profile_pic"),
-                    resultSet.getBoolean("email_verified"),
-                    resultSet.getInt("company_id")
-            );
-        } else {
-            logger.warning("No user found with email: " + email);
-            return null; // User not found or invalid credentials
+            if (resultSet.next()) {
+                // Retrieve the hashed password from the database
+                String hashedPassword = resultSet.getString("password");
+
+                // Verify the provided plain password against the hashed password
+                if (BCrypt.checkpw(plainPassword, hashedPassword)) {
+                    // Password matches, create and return the User object
+                    return new User(
+                            resultSet.getInt("user_id"),
+                            resultSet.getString("email"),
+                            resultSet.getString("role"),
+                            resultSet.getString("first_name"),
+                            resultSet.getString("last_name"),
+                            resultSet.getString("title"),
+                            resultSet.getString("about_me"),
+                            resultSet.getString("phone_number"),
+                            resultSet.getString("profile_pic"),
+                            resultSet.getBoolean("email_verified"),
+                            resultSet.getInt("company_id")
+                    );
+                } else {
+                    // Password does not match
+                    logger.warning("Invalid password for email: " + email);
+                    return null; // Invalid credentials
+                }
+            } else {
+                // No user found with the given email
+                logger.warning("No user found with email: " + email);
+                return null; // User not found
+            }
         }
     }
 
@@ -157,6 +172,43 @@ public class UserDBUtils {
             throw new RuntimeException("Error updating user password", e);
         }
     }
+
+    //create a new user
+    public static User createUser(User user) {
+        String insertQuery = "INSERT INTO Users (email, password, role, first_name, last_name, title, about_me, phone_number, profile_pic, email_verified, company_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, user.getEmail());
+
+            // Hash the password before storing it in the database
+            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+            ps.setString(2, hashedPassword);
+
+            ps.setString(3, user.getRole());
+            ps.setString(4, user.getFirstName());
+            ps.setString(5, user.getLastName());
+            ps.setString(6, user.getTitle());
+            ps.setString(7, user.getAboutMe());
+            ps.setString(8, user.getPhoneNumber());
+            ps.setString(9, user.getProfilePic());
+            ps.setBoolean(10, user.isEmailVerified());
+            ps.setInt(11, user.getCompanyId());
+
+            ps.executeUpdate();
+
+            // Retrieve the generated user ID
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int userId = generatedKeys.getInt(1);
+                return getUserById(userId);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error creating user", e);
+            throw new RuntimeException("Error creating user", e);
+        }
+    }
+
 
 
 

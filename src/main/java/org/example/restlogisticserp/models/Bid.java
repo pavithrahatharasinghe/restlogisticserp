@@ -3,26 +3,39 @@ package org.example.restlogisticserp.models;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Bid {
     private Integer bidId;
-    private Long inquiryId; // Foreign key to Inquiry
-    private Long createdCompanyId; // Foreign key to Company
+    private Integer inquiryId; // Foreign key to Inquiry
+    private Integer createdCompanyId; // Foreign key to Company
     private BigDecimal amount;
-    private Timestamp bidDate;
-    private Timestamp cutOffDate;
+    
+    
     private String status;
     private Boolean isAccepted;
     private Boolean isFinalized;
-    private Long createdBy; // Foreign key to User
-    private Long acceptedBy; // Foreign key to User (optional)
-    private Long inquiryOwnerCompanyId; // Foreign key to Company
+    private Integer createdBy; // Foreign key to User
+    private Integer acceptedBy; // Foreign key to User (optional)
+    private Integer inquiryOwnerCompanyId; // Foreign key to Company
+    
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private Timestamp bidDate;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private Timestamp cutOffDate;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp createdAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp updatedAt;
 
     public Bid() {
     }
 
-    public Bid(Integer bidId, Long inquiryId, Long createdCompanyId, BigDecimal amount, Timestamp bidDate, Timestamp cutOffDate, String status, Boolean isAccepted, Boolean isFinalized, Long createdBy, Long acceptedBy, Long inquiryOwnerCompanyId, Timestamp createdAt, Timestamp updatedAt) {
+    public Bid(Integer bidId, Integer inquiryId, Integer createdCompanyId, BigDecimal amount, Timestamp bidDate, Timestamp cutOffDate, String status, Boolean isAccepted, Boolean isFinalized, Integer createdBy, Integer acceptedBy, Integer inquiryOwnerCompanyId, Timestamp createdAt, Timestamp updatedAt) {
         this.bidId = bidId;
         this.inquiryId = inquiryId;
         this.createdCompanyId = createdCompanyId;
@@ -48,19 +61,19 @@ public class Bid {
         this.bidId = bidId;
     }
 
-    public Long getInquiryId() {
+    public Integer getInquiryId() {
         return inquiryId;
     }
 
-    public void setInquiryId(Long inquiryId) {
+    public void setInquiryId(Integer inquiryId) {
         this.inquiryId = inquiryId;
     }
 
-    public Long getCreatedCompanyId() {
+    public Integer getCreatedCompanyId() {
         return createdCompanyId;
     }
 
-    public void setCreatedCompanyId(Long createdCompanyId) {
+    public void setCreatedCompanyId(Integer createdCompanyId) {
         this.createdCompanyId = createdCompanyId;
     }
 
@@ -112,27 +125,27 @@ public class Bid {
         this.isFinalized = isFinalized;
     }
 
-    public Long getCreatedBy() {
+    public Integer getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(Long createdBy) {
+    public void setCreatedBy(Integer createdBy) {
         this.createdBy = createdBy;
     }
 
-    public Long getAcceptedBy() {
+    public Integer getAcceptedBy() {
         return acceptedBy;
     }
 
-    public void setAcceptedBy(Long acceptedBy) {
+    public void setAcceptedBy(Integer acceptedBy) {
         this.acceptedBy = acceptedBy;
     }
 
-    public Long getInquiryOwnerCompanyId() {
+    public Integer getInquiryOwnerCompanyId() {
         return inquiryOwnerCompanyId;
     }
 
-    public void setInquiryOwnerCompanyId(Long inquiryOwnerCompanyId) {
+    public void setInquiryOwnerCompanyId(Integer inquiryOwnerCompanyId) {
         this.inquiryOwnerCompanyId = inquiryOwnerCompanyId;
     }
 

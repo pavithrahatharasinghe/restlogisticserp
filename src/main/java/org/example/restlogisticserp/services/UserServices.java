@@ -36,6 +36,23 @@ public class UserServices {
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createUser(User user) {
+        User newUser = UserDBUtils.createUser(user);
+        if (newUser != null) {
+            return Response.ok(newUser).build();
+        } else {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("User creation failed").build();
+        }
+    }
+
+
+
+
+
+
+    @POST
     @Path("/authenticate")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

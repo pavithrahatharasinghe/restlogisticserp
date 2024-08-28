@@ -44,7 +44,7 @@ public class BidDBUtils {
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        bid.setBidId((int) generatedKeys.getLong(1)); // Use getLong(1) if bidId is a Long
+                        bid.setBidId((int) generatedKeys.getInt(1)); // Use getInt(1) if bidId is a Long
                     } else {
                         throw new SQLException("Creating bid failed, no ID obtained.");
                     }
@@ -255,16 +255,16 @@ public class BidDBUtils {
     private static Bid mapResultSetToBid(ResultSet resultSet) throws SQLException {
         Bid bid = new Bid();
         bid.setBidId(resultSet.getInt("bid_id"));  // Changed to int
-        bid.setInquiryId(resultSet.getLong("inquiry_id"));
-        bid.setCreatedCompanyId(resultSet.getLong("created_company_id"));
+        bid.setInquiryId(resultSet.getInt("inquiry_id"));
+        bid.setCreatedCompanyId(resultSet.getInt("created_company_id"));
         bid.setAmount(resultSet.getBigDecimal("amount"));
         bid.setBidDate(resultSet.getTimestamp("bid_date"));  // Use bidDate here
         bid.setCutOffDate(resultSet.getTimestamp("cut_off_date"));  // Use cutOffDate here
         bid.setStatus(resultSet.getString("status"));
         bid.setIsAccepted(resultSet.getBoolean("is_accepted"));
         bid.setIsFinalized(resultSet.getBoolean("is_finalized"));
-        bid.setCreatedBy(resultSet.getLong("created_by"));
-        bid.setInquiryOwnerCompanyId(resultSet.getLong("inquiry_owner_company_id"));
+        bid.setCreatedBy(resultSet.getInt("created_by"));
+        bid.setInquiryOwnerCompanyId(resultSet.getInt("inquiry_owner_company_id"));
         bid.setCreatedAt(resultSet.getTimestamp("created_at"));
         bid.setUpdatedAt(resultSet.getTimestamp("updated_at"));
         return bid;

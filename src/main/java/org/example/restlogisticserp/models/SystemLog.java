@@ -1,10 +1,15 @@
 package org.example.restlogisticserp.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
 
 public class SystemLog {
     private Long logId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp logTimestamp;
+
     private String severity;
     private String source;
     private String ipAddress;
