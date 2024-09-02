@@ -57,9 +57,10 @@ public class BidServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateBidAmount(@PathParam("bidId") Long bidId, BigDecimal amount) {
         try {
+            // Process the bid update with the provided amount
             String result = BidDBUtils.updateBidAmount(bidId, amount);
             if (result.equals("Bid amount updated successfully.")) {
-                return Response.ok().build();
+                return Response.ok().entity(result).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
             }
@@ -68,6 +69,7 @@ public class BidServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
         }
     }
+
 
     @GET
     @Path("/company/{companyId}")
@@ -134,6 +136,20 @@ public class BidServices {
             }
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error closing bid", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        }
+    }
+
+    //check places bid by company and inquiry
+    @GET
+    @Path("/company/{companyId}/inquiry/{inquiryId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBidsForCompanyAndInquiry(@PathParam("companyId") Integer companyId, @PathParam("inquiryId") Integer inquiryId) {
+        try {
+            List<Bid> bids = BidDBUtils.fetchBidsForCompanyAndInquiry(companyId, inquiryId);
+            return Response.ok(bids).build();
+        } catch (RuntimeException e) {
+            logger.log(Level.SEVERE, "Error fetching bids for company and inquiry", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
         }
     }

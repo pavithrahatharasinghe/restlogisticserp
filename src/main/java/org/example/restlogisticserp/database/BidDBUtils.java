@@ -279,4 +279,26 @@ public class BidDBUtils {
         summary.setTotalCount(resultSet.getInt("total_count"));
         return summary;
     }
+
+    public static List<Bid> fetchBidsForCompanyAndInquiry(Integer companyId, Integer inquiryId) {
+        List<Bid> bids = new ArrayList<>();
+        String query = "SELECT * FROM bids WHERE created_company_id = ? AND inquiry_id = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, companyId);
+            statement.setInt(2, inquiryId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    bids.add(mapResultSetToBid(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "SQL Error: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unexpected error: " + e.getMessage(), e);
+        }
+
+        return bids;
+    }
 }
