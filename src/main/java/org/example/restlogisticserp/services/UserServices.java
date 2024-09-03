@@ -8,6 +8,9 @@ import org.example.restlogisticserp.models.User;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -17,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Base64;
 
 @Path("/users")
 public class UserServices {
@@ -47,11 +51,6 @@ public class UserServices {
         }
     }
 
-
-
-
-
-
     @POST
     @Path("/authenticate")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -77,25 +76,26 @@ public class UserServices {
 
     @POST
     @Path("/{userId}/profile-picture")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response uploadProfilePicture(
             @PathParam("userId") int userId,
-            @FormDataParam("file") InputStream uploadedInputStream,
-            @FormDataParam("file") FormDataContentDisposition fileDetail) {
+            String base64Image) {
 
-        String fileExtension = fileDetail.getFileName().substring(fileDetail.getFileName().lastIndexOf("."));
-        String fileName = "user-" + userId + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + fileExtension;
-        String uploadedFileLocation = UPLOAD_DIR + fileName;
+        if (base64Image == null || base64Image.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid image input").build();
+        }
 
         try {
-            saveToFile(uploadedInputStream, uploadedFileLocation);
+            // Handle Base64 string, stripping off any Data URI prefix if present
+            String[] parts = base64Image.split(",");
+            String base64String = parts.length > 1 ? parts[1] : parts[0];
 
-            String picturePath = "/uploads/userProfile/" + fileName;
-            User updatedUser = UserDBUtils.updateProfilePicture(userId, picturePath);
+            // Update the profile picture in the database
+            User updatedUser = UserDBUtils.updateProfilePictureBase64(userId, base64String);
 
             if (updatedUser != null) {
-                return Response.ok(updatedUser).build();
+                return Response.ok("Profile picture updated successfully").build();
             } else {
                 return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
             }
@@ -130,8 +130,7 @@ public class UserServices {
             @PathParam("userId") int userId,
             @QueryParam("password") String newPassword) {
 
-        // Hash the password as per your security practices
-        String hashedPassword = hashPassword(newPassword); // Implement hashPassword as needed
+        String hashedPassword = hashPassword(newPassword);
         UserDBUtils.updateUserPassword(userId, hashedPassword);
         return Response.ok("Password updated successfully").build();
     }
@@ -148,19 +147,21 @@ public class UserServices {
         }
     }
 
-
-    private void saveToFile(InputStream uploadedInputStream, String serverLocation) throws Exception {
-        try (FileOutputStream out = new FileOutputStream(new File(serverLocation))) {
-            int read;
-            byte[] bytes = new byte[1024];
-            while ((read = uploadedInputStream.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-        }
+    private String hashPassword(String password) {
+        return password; // Replace with actual hashed password
     }
 
-    private String hashPassword(String password) {
-        // Implement your password hashing logic here
-        return password; // Replace with actual hashed password
+    //add new user
+    @POST
+    @Path("/add")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addUser(User user) {
+        User newUser = UserDBUtils.createUser(user);
+        if (newUser != null) {
+            return Response.ok(newUser).build();
+        } else {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("User creation failed").build();
+        }
     }
 }

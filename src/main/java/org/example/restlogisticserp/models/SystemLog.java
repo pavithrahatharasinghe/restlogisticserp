@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 
 public class SystemLog {
-    private Long logId;
+    private int logId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Timestamp logTimestamp;
@@ -14,26 +14,26 @@ public class SystemLog {
     private String source;
     private String ipAddress;
     private String message;
-    private User user; // Foreign key to User
+    private int userId;
 
-    public SystemLog(Long logId, Timestamp logTimestamp, String severity, String source, String ipAddress, String message, User user) {
+    public SystemLog() {
+    }
+
+    public SystemLog(int logId, Timestamp logTimestamp, String severity, String source, String ipAddress, String message, int userId) {
         this.logId = logId;
         this.logTimestamp = logTimestamp;
         this.severity = severity;
         this.source = source;
         this.ipAddress = ipAddress;
         this.message = message;
-        this.user = user;
+        this.userId = userId;
     }
 
-    public SystemLog() {
-    }
-
-    public Long getLogId() {
+    public int getLogId() {
         return logId;
     }
 
-    public void setLogId(Long logId) {
+    public void setLogId(int logId) {
         this.logId = logId;
     }
 
@@ -77,11 +77,11 @@ public class SystemLog {
         this.message = message;
     }
 
-    public User getUser() {
-        return user;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 }

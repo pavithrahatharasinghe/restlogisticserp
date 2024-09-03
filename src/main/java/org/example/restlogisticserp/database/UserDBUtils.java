@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.mindrot.jbcrypt.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserDBUtils {
     private static final Logger logger = Logger.getLogger(UserDBUtils.class.getName());
@@ -25,7 +25,6 @@ public class UserDBUtils {
             logger.log(Level.SEVERE, "Error establishing database connection", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Unexpected error", e);
             throw new RuntimeException(e);
         }
     }
@@ -53,24 +52,15 @@ public class UserDBUtils {
         return users;
     }
 
-
-
     public static User authenticateUser(String email, String plainPassword) throws SQLException {
-        // SQL query to select user details based on the email
         String query = "SELECT * FROM Users WHERE email = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
-
-            // Execute the query and get the result set
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                // Retrieve the hashed password from the database
                 String hashedPassword = resultSet.getString("password");
-
-                // Verify the provided plain password against the hashed password
                 if (BCrypt.checkpw(plainPassword, hashedPassword)) {
-                    // Password matches, create and return the User object
                     return new User(
                             resultSet.getInt("user_id"),
                             resultSet.getString("email"),
@@ -85,20 +75,17 @@ public class UserDBUtils {
                             resultSet.getInt("company_id")
                     );
                 } else {
-                    // Password does not match
                     logger.warning("Invalid password for email: " + email);
-                    return null; // Invalid credentials
+                    return null;
                 }
             } else {
-                // No user found with the given email
                 logger.warning("No user found with email: " + email);
-                return null; // User not found
+                return null;
             }
         }
     }
 
     public static User getUserById(int userId) {
-        // Implement this method to fetch a user by ID
         String query = "SELECT * FROM Users WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, userId);
@@ -127,14 +114,12 @@ public class UserDBUtils {
     }
 
     public static User updateProfilePicture(int userId, String picturePath) {
-        String updateQuery = "UPDATE Users SET profile_pic = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE Users SET profile_pic_base64 = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, picturePath);
             ps.setInt(2, userId);
-
             int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
-                // Fetch and return the updated user
                 return getUserById(userId);
             } else {
                 return null;
@@ -144,6 +129,36 @@ public class UserDBUtils {
             throw new RuntimeException("Error updating profile picture", e);
         }
     }
+
+    public static User updateProfilePictureBase64(int userId, String base64Image) {
+        if (base64Image == null || base64Image.trim().isEmpty()) {
+            logger.warning("Base64 image string cannot be null or empty");
+            throw new IllegalArgumentException("Base64 image string cannot be null or empty");
+        }
+
+        String updateQuery = "UPDATE Users SET profile_pic_base64 = ? WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, base64Image);
+            ps.setInt(2, userId);
+
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated > 0) {
+                // Fetch and return the updated user
+                return getUserById(userId);
+            } else {
+                logger.warning("No user found with ID: " + userId);
+                return null;
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "SQL Error updating profile picture for user ID: " + userId, e);
+            throw new RuntimeException("Error updating profile picture", e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unexpected Error updating profile picture for user ID: " + userId, e);
+            throw new RuntimeException("Unexpected error", e);
+        }
+    }
+
+
 
     public static void updateUserProfile(int userId, String firstName, String lastName, String email, String phoneNumber, String aboutMe) {
         String updateQuery = "UPDATE Users SET first_name = ?, last_name = ?, email = ?, phone_number = ?, about_me = ? WHERE user_id = ?";
@@ -173,16 +188,12 @@ public class UserDBUtils {
         }
     }
 
-    //create a new user
     public static User createUser(User user) {
         String insertQuery = "INSERT INTO Users (email, password, role, first_name, last_name, title, about_me, phone_number, profile_pic, email_verified, company_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getEmail());
-
-            // Hash the password before storing it in the database
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(2, hashedPassword);
-
             ps.setString(3, user.getRole());
             ps.setString(4, user.getFirstName());
             ps.setString(5, user.getLastName());
@@ -192,10 +203,7 @@ public class UserDBUtils {
             ps.setString(9, user.getProfilePic());
             ps.setBoolean(10, user.isEmailVerified());
             ps.setInt(11, user.getCompanyId());
-
             ps.executeUpdate();
-
-            // Retrieve the generated user ID
             ResultSet generatedKeys = ps.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int userId = generatedKeys.getInt(1);
@@ -208,9 +216,4 @@ public class UserDBUtils {
             throw new RuntimeException("Error creating user", e);
         }
     }
-
-
-
-
-
 }

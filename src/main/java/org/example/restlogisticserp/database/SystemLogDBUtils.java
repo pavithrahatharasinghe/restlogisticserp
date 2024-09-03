@@ -1,7 +1,12 @@
 package org.example.restlogisticserp.database;
 
 import org.example.restlogisticserp.DatabaseConnection;
+import org.example.restlogisticserp.models.SystemLog;
+import org.example.restlogisticserp.models.User;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -24,7 +29,7 @@ public class SystemLogDBUtils {
     }
 
     //create a new system log
-    public static void createSystemLog(String severity, String source, String ipAddress, String message, Long userId) {
+    public static void createSystemLog(String severity, String source, String ipAddress, String message, int userId) {
         try {
             String query = "INSERT INTO system_logs (log_timestamp, severity, source, ip_address, message, user_id) VALUES (NOW(), ?, ?, ?, ?, ?)";
             var statement = connection.prepareStatement(query);
@@ -38,6 +43,32 @@ public class SystemLogDBUtils {
             logger.log(Level.SEVERE, "Error creating system log", e);
             throw new RuntimeException(e);
         }
+    }
+
+    //fetch all system logs
+    public static List<SystemLog> fetchAllSystemLogs() {
+        List<SystemLog> logs = new ArrayList<>();
+        try {
+            String query = "SELECT * FROM system_logs";
+            var statement = connection.prepareStatement(query);
+            var resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int logId = resultSet.getInt("log_id");
+                Timestamp logTimestamp = resultSet.getTimestamp("log_timestamp");
+                String severity = resultSet.getString("severity");
+                String source = resultSet.getString("source");
+                String ipAddress = resultSet.getString("ip_address");
+                String message = resultSet.getString("message");
+                int userId = resultSet.getInt("user_id");
+
+                SystemLog log = new SystemLog(logId, logTimestamp, severity, source, ipAddress, message, userId);
+                logs.add(log);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching system logs", e);
+            throw new RuntimeException(e);
+        }
+        return logs;
     }
 
 }
