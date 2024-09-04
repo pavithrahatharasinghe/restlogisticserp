@@ -108,6 +108,7 @@ public class BidDBUtils {
 
     public static List<Bid> fetchBidsForCompany(long companyId) {
         List<Bid> bids = new ArrayList<>();
+        //get inquiry reference as inquiry_reference
         String query = "SELECT b.*, i.inquiry_reference FROM bids b INNER JOIN inquiries i ON b.inquiry_id = i.inquiry_id WHERE b.created_company_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {

@@ -2,6 +2,7 @@ package org.example.restlogisticserp.database;
 
 import org.example.restlogisticserp.DatabaseConnection;
 import org.example.restlogisticserp.models.Inquiry;
+import org.example.restlogisticserp.models.InquirySearchParams;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -254,5 +255,69 @@ public class InquiryDBUtils {
         }
         return inquiries;
     }
+
+    // Search inquiries with various parameters
+    public static List<Inquiry> searchInquiries(InquirySearchParams searchParams) {
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Inquiries WHERE PublishedStatus = 'Published'");
+        List<Object> parameters = new ArrayList<>();
+
+        if (searchParams.getCompanyId() > 0) {
+            queryBuilder.append(" AND company_id = ?");
+            parameters.add(searchParams.getCompanyId());
+        }
+
+        if (searchParams.getFromDate() != null && !searchParams.getFromDate().isEmpty()) {
+            queryBuilder.append(" AND publish_date >= ?");
+            parameters.add(Date.valueOf(searchParams.getFromDate()));
+        }
+
+        if (searchParams.getToDate() != null && !searchParams.getToDate().isEmpty()) {
+            queryBuilder.append(" AND publish_date <= ?");
+            parameters.add(Date.valueOf(searchParams.getToDate()));
+        }
+
+        if (searchParams.getMode() != null && !searchParams.getMode().isEmpty()) {
+            queryBuilder.append(" AND shipment_mode = ?");
+            parameters.add(searchParams.getMode());
+        }
+
+        if (searchParams.getPol() != null && !searchParams.getPol().isEmpty()) {
+            queryBuilder.append(" AND port_of_origin = ?");
+            parameters.add(searchParams.getPol());
+        }
+
+        if (searchParams.getPod() != null && !searchParams.getPod().isEmpty()) {
+            queryBuilder.append(" AND port_of_discharge = ?");
+            parameters.add(searchParams.getPod());
+        }
+
+        if (searchParams.getInquiryReference() != null && !searchParams.getInquiryReference().isEmpty()) {
+            queryBuilder.append(" AND inquiry_reference LIKE ?");
+            parameters.add("%" + searchParams.getInquiryReference() + "%");
+        }
+
+        queryBuilder.append(" ORDER BY created_at DESC");
+
+        String query = queryBuilder.toString();
+        List<Inquiry> inquiries = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Inquiry inquiry = mapResultSetToInquiry(resultSet);
+                inquiries.add(inquiry);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error searching inquiries", e);
+            throw new RuntimeException(e);
+        }
+        return inquiries;
+    }
+
 }
 

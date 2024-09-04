@@ -5,13 +5,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.restlogisticserp.database.InquiryDBUtils;
 import org.example.restlogisticserp.models.Inquiry;
+import org.example.restlogisticserp.models.InquirySearchParams;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/inquiries")
 public class InquiryServices {
     private static final Logger logger = Logger.getLogger(InquiryServices.class.getName());
+
+
+
 
     @POST
     @Path("/create")
@@ -65,15 +70,18 @@ public class InquiryServices {
         try {
             boolean updated = InquiryDBUtils.updateInquiry(inquiryId, inquiry);
             if (updated) {
-                return Response.ok(inquiry).build();
+                return Response.ok(inquiry).build();  // Returns the updated inquiry object
             } else {
                 return Response.status(Response.Status.NOT_FOUND).entity("Inquiry not found").build();
             }
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating inquiry", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Server error: " + e.getMessage()).build();
         }
     }
+
+
 
     @GET
     @Path("/published/customer/{companyId}")
@@ -117,6 +125,22 @@ public class InquiryServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
         }
     }
+
+    @POST
+    @Path("/search")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchInquiries(InquirySearchParams searchParams) {
+        try {
+            List<Inquiry> inquiries = InquiryDBUtils.searchInquiries(searchParams);
+            return Response.ok(inquiries).build();
+        } catch (RuntimeException e) {
+            logger.log(Level.SEVERE, "Error searching inquiries", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        }
+    }
+
+
 
 
 }
