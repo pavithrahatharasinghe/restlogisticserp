@@ -14,9 +14,9 @@ public class DatabaseConnection {
     private DatabaseConnection() throws Exception {
 
 
-        String dbURL = "jdbc:mysql://localhost:3306/erp_db";
-        String dbUsername = "root";
-        String dbPassword = "123456";
+        String dbURL = "jdbc:mysql://m7nj9dclezfq7ax1.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/jtgzcb7cdfi5qvtx?useSSL=false";
+        String dbUsername = "i41s2x37chsw1lk4";
+        String dbPassword = "mxxnh5bt8ay4ok0l";
         String dbDriver = "com.mysql.cj.jdbc.Driver";
 
         try {
