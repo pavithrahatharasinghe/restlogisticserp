@@ -43,7 +43,7 @@ public class UserDBUtils {
                     resultSet.getString("title"),
                     resultSet.getString("about_me"),
                     resultSet.getString("phone_number"),
-                    resultSet.getString("profile_pic"),
+                    resultSet.getString("profile_pic_base64"),
                     resultSet.getBoolean("email_verified"),
                     resultSet.getInt("company_id")
             );
@@ -70,7 +70,7 @@ public class UserDBUtils {
                             resultSet.getString("title"),
                             resultSet.getString("about_me"),
                             resultSet.getString("phone_number"),
-                            resultSet.getString("profile_pic"),
+                            resultSet.getString("profile_pic_base64"),
                             resultSet.getBoolean("email_verified"),
                             resultSet.getInt("company_id")
                     );
@@ -100,7 +100,7 @@ public class UserDBUtils {
                         resultSet.getString("title"),
                         resultSet.getString("about_me"),
                         resultSet.getString("phone_number"),
-                        resultSet.getString("profile_pic"),
+                        resultSet.getString("profile_pic_base64"),
                         resultSet.getBoolean("email_verified"),
                         resultSet.getInt("company_id")
                 );
@@ -112,21 +112,32 @@ public class UserDBUtils {
             throw new RuntimeException("Error fetching user by ID", e);
         }
     }
+    //updateProfilePicture with profile pic path
+    public static User updateProfilePicture(int userId, String profilePicPath) {
+        if (profilePicPath == null || profilePicPath.trim().isEmpty()) {
+            logger.warning("Profile picture path cannot be null or empty");
+            throw new IllegalArgumentException("Profile picture path cannot be null or empty");
+        }
 
-    public static User updateProfilePicture(int userId, String picturePath) {
-        String updateQuery = "UPDATE Users SET profile_pic_base64 = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE Users SET profile_pic = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
-            ps.setString(1, picturePath);
+            ps.setString(1, profilePicPath);
             ps.setInt(2, userId);
+
             int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
+                // Fetch and return the updated user
                 return getUserById(userId);
             } else {
+                logger.warning("No user found with ID: " + userId);
                 return null;
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error updating profile picture", e);
+            logger.log(Level.SEVERE, "SQL Error updating profile picture for user ID: " + userId, e);
             throw new RuntimeException("Error updating profile picture", e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Unexpected Error updating profile picture for user ID: " + userId, e);
+            throw new RuntimeException("Unexpected error", e);
         }
     }
 
@@ -157,7 +168,6 @@ public class UserDBUtils {
             throw new RuntimeException("Unexpected error", e);
         }
     }
-
 
 
     public static void updateUserProfile(int userId, String firstName, String lastName, String email, String phoneNumber, String aboutMe) {
@@ -214,6 +224,42 @@ public class UserDBUtils {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error creating user", e);
             throw new RuntimeException("Error creating user", e);
+        }
+    }
+
+    public static User updateUser(User user) {
+        String updateQuery = "UPDATE Users SET email = ?, role = ?, first_name = ?, last_name = ?, title = ?, about_me = ?, phone_number = ?, profile_pic = ?, company_id = ? WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, user.getEmail());
+            ps.setString(2, user.getRole());
+            ps.setString(3, user.getFirstName());
+            ps.setString(4, user.getLastName());
+            ps.setString(5, user.getTitle());
+            ps.setString(6, user.getAboutMe());
+            ps.setString(7, user.getPhoneNumber());
+            ps.setString(8, user.getProfilePic());
+
+            ps.setInt(9, user.getCompanyId());
+            ps.setInt(10, user.getUserId());
+            ps.executeUpdate();
+            return getUserById(user.getUserId());
+
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating user", e);
+            throw new RuntimeException("Error updating user", e);
+        }
+    }
+
+    public static void updateUserProfilePicturePath(int userId, String profilePicturePath) {
+        String updateQuery = "UPDATE Users SET profile_pic = ? WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, profilePicturePath);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating user profile picture path", e);
+            throw new RuntimeException("Error updating user profile picture path", e);
         }
     }
 }

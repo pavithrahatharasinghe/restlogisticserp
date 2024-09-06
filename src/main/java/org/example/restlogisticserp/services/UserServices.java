@@ -105,6 +105,24 @@ public class UserServices {
         }
     }
 
+    //update with  profile-picture path user id and profile picture path form root don ot upload comes only id and path as string
+    @PUT
+    @Path("/{userId}/profile-picture-file-path")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateUserProfile(
+            @PathParam("userId") int userId,
+            String profilePicturePath) {
+
+        UserDBUtils.updateUserProfilePicturePath(userId, profilePicturePath);
+        User updatedUser = UserDBUtils.getUserById(userId);
+        if (updatedUser != null) {
+            return Response.ok(updatedUser).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+        }
+    }
+
     @PUT
     @Path("/{userId}/profile")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -162,6 +180,20 @@ public class UserServices {
             return Response.ok(newUser).build();
         } else {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("User creation failed").build();
+        }
+    }
+
+    //update user
+    @PUT
+    @Path("/update")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateUser(User user) {
+        User updatedUser = UserDBUtils.updateUser(user);
+        if (updatedUser != null) {
+            return Response.ok(updatedUser).build();
+        } else {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("User update failed").build();
         }
     }
 }
