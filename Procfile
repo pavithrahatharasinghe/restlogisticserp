@@ -1,1 +1,1 @@
-web: java -jar webapp-runner.jar restlogisticserp-1.war
+web: java $JAVA_OPTS -jar target/dependency/webapp-runner.jar --port $PORT target/*.war
