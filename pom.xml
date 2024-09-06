@@ -107,11 +107,12 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
+                            <outputDirectory>${project.basedir}</outputDirectory> <!-- Copy to the root directory -->
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.heroku</groupId>
                                     <artifactId>webapp-runner</artifactId>
-                                    <version>9.0.89.0</version>
+                                    <version>10.1.28.0</version> <!-- Updated version -->
                                     <destFileName>webapp-runner.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
@@ -119,6 +120,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
         </plugins>
     </build>
