@@ -8,6 +8,7 @@ import org.example.restlogisticserp.models.Bid;
 import org.example.restlogisticserp.models.BidSummary;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +32,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error creating bid", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -48,6 +51,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bid", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -67,6 +72,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating bid amount", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -81,6 +88,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bids for company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -94,6 +103,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bids summary for shipping company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -107,6 +118,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bids summary for customer company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -120,6 +133,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bids for inquiry", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -137,6 +152,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error closing bid", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -151,6 +168,8 @@ public class BidServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching bids for company and inquiry", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

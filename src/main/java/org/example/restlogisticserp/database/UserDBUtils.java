@@ -21,7 +21,7 @@ public class UserDBUtils {
     static {
         try {
             connection = DatabaseConnection.getInstance().getConnection();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error establishing database connection", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
@@ -29,9 +29,16 @@ public class UserDBUtils {
         }
     }
 
+    private static void checkConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connection = DatabaseConnection.getInstance().getConnection();
+        }
+    }
+
     public static List<User> getAllUsers() throws SQLException {
+        checkConnection();
         List<User> users = new ArrayList<>();
-        PreparedStatement statement = connection.prepareStatement("SELECT * FROM Users");
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM users");
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             User user = new User(
@@ -53,7 +60,8 @@ public class UserDBUtils {
     }
 
     public static User authenticateUser(String email, String plainPassword) throws SQLException {
-        String query = "SELECT * FROM Users WHERE email = ?";
+        checkConnection();
+        String query = "SELECT * FROM users WHERE email = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
@@ -85,8 +93,9 @@ public class UserDBUtils {
         }
     }
 
-    public static User getUserById(int userId) {
-        String query = "SELECT * FROM Users WHERE user_id = ?";
+    public static User getUserById(int userId) throws SQLException {
+        checkConnection();
+        String query = "SELECT * FROM users WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, userId);
             ResultSet resultSet = ps.executeQuery();
@@ -119,7 +128,7 @@ public class UserDBUtils {
             throw new IllegalArgumentException("Profile picture path cannot be null or empty");
         }
 
-        String updateQuery = "UPDATE Users SET profile_pic = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE users SET profile_pic = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, profilePicPath);
             ps.setInt(2, userId);
@@ -141,13 +150,14 @@ public class UserDBUtils {
         }
     }
 
-    public static User updateProfilePictureBase64(int userId, String base64Image) {
+    public static User updateProfilePictureBase64(int userId, String base64Image) throws SQLException {
+        checkConnection();
         if (base64Image == null || base64Image.trim().isEmpty()) {
             logger.warning("Base64 image string cannot be null or empty");
             throw new IllegalArgumentException("Base64 image string cannot be null or empty");
         }
 
-        String updateQuery = "UPDATE Users SET profile_pic_base64 = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE users SET profile_pic_base64 = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, base64Image);
             ps.setInt(2, userId);
@@ -170,8 +180,9 @@ public class UserDBUtils {
     }
 
 
-    public static void updateUserProfile(int userId, String firstName, String lastName, String email, String phoneNumber, String aboutMe) {
-        String updateQuery = "UPDATE Users SET first_name = ?, last_name = ?, email = ?, phone_number = ?, about_me = ? WHERE user_id = ?";
+    public static void updateUserProfile(int userId, String firstName, String lastName, String email, String phoneNumber, String aboutMe) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET first_name = ?, last_name = ?, email = ?, phone_number = ?, about_me = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, firstName);
             ps.setString(2, lastName);
@@ -186,8 +197,27 @@ public class UserDBUtils {
         }
     }
 
-    public static void updateUserPassword(int userId, String hashedPassword) {
-        String updateQuery = "UPDATE Users SET password = ? WHERE user_id = ?";
+    public static String getUserPassword(int userId) throws SQLException {
+        checkConnection();
+        String selectQuery = "SELECT password FROM users WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(selectQuery)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("password");
+            } else {
+                throw new SQLException("User not found");
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error retrieving user password", e);
+            throw new RuntimeException("Error retrieving user password", e);
+        }
+    }
+
+
+    public static void updateUserPassword(int userId, String hashedPassword) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET password = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, hashedPassword);
             ps.setInt(2, userId);
@@ -198,8 +228,13 @@ public class UserDBUtils {
         }
     }
 
-    public static User createUser(User user) {
-        String insertQuery = "INSERT INTO Users (email, password, role, first_name, last_name, title, about_me, phone_number, profile_pic, email_verified, company_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+
+
+    public static User createUser(User user) throws SQLException {
+        checkConnection();
+        String insertQuery = "INSERT INTO users (email, password, role, first_name, last_name, title, about_me, phone_number, profile_pic, email_verified, company_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getEmail());
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
@@ -227,8 +262,9 @@ public class UserDBUtils {
         }
     }
 
-    public static User updateUser(User user) {
-        String updateQuery = "UPDATE Users SET email = ?, role = ?, first_name = ?, last_name = ?, title = ?, about_me = ?, phone_number = ?, profile_pic = ?, company_id = ? WHERE user_id = ?";
+    public static User updateUser(User user) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET email = ?, role = ?, first_name = ?, last_name = ?, title = ?, about_me = ?, phone_number = ?, profile_pic = ?, company_id = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getRole());
@@ -251,8 +287,9 @@ public class UserDBUtils {
         }
     }
 
-    public static void updateUserProfilePicturePath(int userId, String profilePicturePath) {
-        String updateQuery = "UPDATE Users SET profile_pic = ? WHERE user_id = ?";
+    public static void updateUserProfilePicturePath(int userId, String profilePicturePath) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET profile_pic = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
             ps.setString(1, profilePicturePath);
             ps.setInt(2, userId);

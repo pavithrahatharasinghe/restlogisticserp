@@ -7,7 +7,9 @@ import org.example.restlogisticserp.database.InquiryDBUtils;
 import org.example.restlogisticserp.models.Inquiry;
 import org.example.restlogisticserp.models.InquirySearchParams;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +31,8 @@ public class InquiryServices {
         } catch (RuntimeException e) {  // Catch RuntimeException since InquiryDBUtils throws it
             logger.log(Level.SEVERE, "Error creating inquiry", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -42,6 +46,8 @@ public class InquiryServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching draft inquiries", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -59,6 +65,8 @@ public class InquiryServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching inquiry by ID", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -78,6 +86,8 @@ public class InquiryServices {
             logger.log(Level.SEVERE, "Error updating inquiry", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -93,6 +103,8 @@ public class InquiryServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching published inquiries by customer", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -106,6 +118,8 @@ public class InquiryServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching published inquiries by company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -123,8 +137,25 @@ public class InquiryServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error fetching published inquiry by ID", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
+//    @POST
+//    @Path("/search")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response searchInquiries(InquirySearchParams searchParams) {
+//        try {
+//            List<Inquiry> inquiries = InquiryDBUtils.searchInquiries(searchParams);
+//            return Response.ok(inquiries).build();
+//        } catch (RuntimeException e) {
+//            logger.log(Level.SEVERE, "Error searching inquiries", e);
+//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     @POST
     @Path("/search")
@@ -132,11 +163,13 @@ public class InquiryServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchInquiries(InquirySearchParams searchParams) {
         try {
-            List<Inquiry> inquiries = InquiryDBUtils.searchInquiries(searchParams);
+            List<Map<String, Object>> inquiries = InquiryDBUtils.searchInquiries(searchParams);
             return Response.ok(inquiries).build();
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error searching inquiries", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

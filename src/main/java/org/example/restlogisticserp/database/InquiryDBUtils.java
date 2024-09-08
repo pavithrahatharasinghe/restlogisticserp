@@ -6,7 +6,9 @@ import org.example.restlogisticserp.models.InquirySearchParams;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +19,7 @@ public class InquiryDBUtils {
     static {
         try {
             connection = DatabaseConnection.getInstance().getConnection();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error establishing database connection", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
@@ -26,8 +28,15 @@ public class InquiryDBUtils {
         }
     }
 
+    private static void checkConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connection = DatabaseConnection.getInstance().getConnection();
+        }
+    }
+
     // Create a new inquiry
-    public static Inquiry createInquiry(Inquiry inquiry) {
+    public static Inquiry createInquiry(Inquiry inquiry) throws SQLException {
+        checkConnection();
         String query = "INSERT INTO Inquiries (company_id, inquiry_reference, shipment_mode, shipment_type, fcl_type, cbm_volume, dimensions, gross_weight, port_of_origin, port_of_discharge, commodity, cargo_description, dangerous_goods, freight_term, inco_term, preferred_date_of_arrival, preferred_date_of_departure, preferred_transit_period, cut_off_time, status, PublishedStatus, publish_date, bid_accepted, accepted_bid_id, created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -72,7 +81,8 @@ public class InquiryDBUtils {
     }
 
     // Fetch draft inquiries by customer
-    public static List<Inquiry> fetchDraftInquiriesByCustomer(int companyId) {
+    public static List<Inquiry> fetchDraftInquiriesByCustomer(int companyId) throws SQLException {
+        checkConnection();
         String query = "SELECT * FROM Inquiries WHERE company_id = ? AND PublishedStatus = 'Draft'";
         List<Inquiry> inquiries = new ArrayList<>();
 
@@ -92,7 +102,8 @@ public class InquiryDBUtils {
     }
 
     // Fetch inquiry by ID
-    public static Inquiry fetchInquiryById(int companyId, int inquiryId) {
+    public static Inquiry fetchInquiryById(int companyId, int inquiryId) throws SQLException {
+        checkConnection();
         String query = "SELECT * FROM Inquiries WHERE company_id = ? AND inquiry_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, companyId);
@@ -111,7 +122,8 @@ public class InquiryDBUtils {
     }
 
     // Update an inquiry
-    public static boolean updateInquiry(int inquiryId, Inquiry inquiry) {
+    public static boolean updateInquiry(int inquiryId, Inquiry inquiry) throws SQLException {
+        checkConnection();
         String query = "UPDATE Inquiries SET inquiry_reference = ?, shipment_mode = ?, shipment_type = ?, fcl_type = ?, cbm_volume = ?, dimensions = ?, gross_weight = ?, port_of_origin = ?, port_of_discharge = ?, commodity = ?, cargo_description = ?, dangerous_goods = ?, freight_term = ?, inco_term = ?, preferred_date_of_arrival = ?, preferred_date_of_departure = ?, preferred_transit_period = ?, cut_off_time = ?, status = ?, PublishedStatus = ?, publish_date = ? WHERE inquiry_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -148,7 +160,8 @@ public class InquiryDBUtils {
     }
 
     // Fetch published inquiries by customer
-    public static List<Inquiry> fetchInquiriesByCustomer(int companyId) {
+    public static List<Inquiry> fetchInquiriesByCustomer(int companyId) throws SQLException {
+        checkConnection();
         String query = "SELECT Inquiries.*, COALESCE((SELECT MIN(amount) FROM bids WHERE bids.inquiry_id = Inquiries.inquiry_id), 0) AS lowest_bid_amount FROM Inquiries WHERE company_id = ? AND PublishedStatus = 'Published' ORDER BY Inquiries.created_at DESC";
         List<Inquiry> inquiries = new ArrayList<>();
 
@@ -168,7 +181,8 @@ public class InquiryDBUtils {
     }
 
     // Fetch published inquiries by company
-    public static List<Inquiry> fetchInquiriesByCompany() {
+    public static List<Inquiry> fetchInquiriesByCompany() throws SQLException {
+        checkConnection();
         String query = "SELECT Inquiries.*, COALESCE((SELECT MIN(amount) FROM bids WHERE bids.inquiry_id = Inquiries.inquiry_id), 0) AS lowest_bid_amount FROM Inquiries WHERE PublishedStatus = 'Published' ORDER BY Inquiries.created_at DESC";
         List<Inquiry> inquiries = new ArrayList<>();
 
@@ -187,7 +201,8 @@ public class InquiryDBUtils {
     }
 
     // Fetch inquiry by ID for company
-    public static Inquiry fetchInquiryByIdByCompany(int inquiryId) {
+    public static Inquiry fetchInquiryByIdByCompany(int inquiryId) throws SQLException {
+        checkConnection();
         String query = "SELECT Inquiries.*, COALESCE((SELECT MIN(amount) FROM bids WHERE bids.inquiry_id = Inquiries.inquiry_id), 0) AS lowest_bid_amount FROM Inquiries WHERE inquiry_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, inquiryId);
@@ -256,50 +271,123 @@ public class InquiryDBUtils {
         return inquiries;
     }
 
-    // Search inquiries with various parameters
-    public static List<Inquiry> searchInquiries(InquirySearchParams searchParams) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Inquiries WHERE PublishedStatus = 'Published'");
+//    // Search inquiries with various parameters
+//    public static List<Inquiry> searchInquiries(InquirySearchParams searchParams) throws SQLException {
+//        checkConnection();
+//        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Inquiries WHERE PublishedStatus = 'Published'");
+//        List<Object> parameters = new ArrayList<>();
+//
+//        if (searchParams.getCompanyId() > 0) {
+//            queryBuilder.append(" AND company_id = ?");
+//            parameters.add(searchParams.getCompanyId());
+//        }
+//
+//        if (searchParams.getFromDate() != null && !searchParams.getFromDate().isEmpty()) {
+//            queryBuilder.append(" AND publish_date >= ?");
+//            parameters.add(Date.valueOf(searchParams.getFromDate()));
+//        }
+//
+//        if (searchParams.getToDate() != null && !searchParams.getToDate().isEmpty()) {
+//            queryBuilder.append(" AND publish_date <= ?");
+//            parameters.add(Date.valueOf(searchParams.getToDate()));
+//        }
+//
+//        if (searchParams.getMode() != null && !searchParams.getMode().isEmpty()) {
+//            queryBuilder.append(" AND shipment_mode = ?");
+//            parameters.add(searchParams.getMode());
+//        }
+//
+//        if (searchParams.getPol() != null && !searchParams.getPol().isEmpty()) {
+//            queryBuilder.append(" AND port_of_origin = ?");
+//            parameters.add(searchParams.getPol());
+//        }
+//
+//        if (searchParams.getPod() != null && !searchParams.getPod().isEmpty()) {
+//            queryBuilder.append(" AND port_of_discharge = ?");
+//            parameters.add(searchParams.getPod());
+//        }
+//
+//        if (searchParams.getInquiryReference() != null && !searchParams.getInquiryReference().isEmpty()) {
+//            queryBuilder.append(" AND inquiry_reference LIKE ?");
+//            parameters.add("%" + searchParams.getInquiryReference() + "%");
+//        }
+//
+//        queryBuilder.append(" ORDER BY created_at DESC");
+//
+//        String query = queryBuilder.toString();
+//        List<Inquiry> inquiries = new ArrayList<>();
+//
+//        try (PreparedStatement statement = connection.prepareStatement(query)) {
+//            for (int i = 0; i < parameters.size(); i++) {
+//                statement.setObject(i + 1, parameters.get(i));
+//            }
+//
+//            ResultSet resultSet = statement.executeQuery();
+//
+//            while (resultSet.next()) {
+//                Inquiry inquiry = mapResultSetToInquiry(resultSet);
+//                inquiries.add(inquiry);
+//            }
+//        } catch (SQLException e) {
+//            logger.log(Level.SEVERE, "Error searching inquiries", e);
+//            throw new RuntimeException(e);
+//        }
+//        return inquiries;
+//    }
+
+    public static List<Map<String, Object>> searchInquiries(InquirySearchParams searchParams) throws SQLException {
+        checkConnection();
+
+        StringBuilder queryBuilder = new StringBuilder(
+                "SELECT i.*, " +
+                        "(SELECT MIN(b.amount) FROM bids b WHERE b.inquiry_id = i.inquiry_id) AS lowestBidAmount " +
+                        "FROM Inquiries i " +
+                        "LEFT JOIN bids b ON i.inquiry_id = b.inquiry_id " +
+                        "WHERE i.PublishedStatus = 'Published'"
+        );
+
         List<Object> parameters = new ArrayList<>();
 
+        // Adding filters dynamically based on the search parameters
         if (searchParams.getCompanyId() > 0) {
-            queryBuilder.append(" AND company_id = ?");
+            queryBuilder.append(" AND i.company_id = ?");
             parameters.add(searchParams.getCompanyId());
         }
 
         if (searchParams.getFromDate() != null && !searchParams.getFromDate().isEmpty()) {
-            queryBuilder.append(" AND publish_date >= ?");
+            queryBuilder.append(" AND i.publish_date >= ?");
             parameters.add(Date.valueOf(searchParams.getFromDate()));
         }
 
         if (searchParams.getToDate() != null && !searchParams.getToDate().isEmpty()) {
-            queryBuilder.append(" AND publish_date <= ?");
+            queryBuilder.append(" AND i.publish_date <= ?");
             parameters.add(Date.valueOf(searchParams.getToDate()));
         }
 
         if (searchParams.getMode() != null && !searchParams.getMode().isEmpty()) {
-            queryBuilder.append(" AND shipment_mode = ?");
+            queryBuilder.append(" AND i.shipment_mode = ?");
             parameters.add(searchParams.getMode());
         }
 
         if (searchParams.getPol() != null && !searchParams.getPol().isEmpty()) {
-            queryBuilder.append(" AND port_of_origin = ?");
+            queryBuilder.append(" AND i.port_of_origin = ?");
             parameters.add(searchParams.getPol());
         }
 
         if (searchParams.getPod() != null && !searchParams.getPod().isEmpty()) {
-            queryBuilder.append(" AND port_of_discharge = ?");
+            queryBuilder.append(" AND i.port_of_discharge = ?");
             parameters.add(searchParams.getPod());
         }
 
         if (searchParams.getInquiryReference() != null && !searchParams.getInquiryReference().isEmpty()) {
-            queryBuilder.append(" AND inquiry_reference LIKE ?");
+            queryBuilder.append(" AND i.inquiry_reference LIKE ?");
             parameters.add("%" + searchParams.getInquiryReference() + "%");
         }
 
-        queryBuilder.append(" ORDER BY created_at DESC");
+        queryBuilder.append(" ORDER BY i.created_at DESC");
 
         String query = queryBuilder.toString();
-        List<Inquiry> inquiries = new ArrayList<>();
+        List<Map<String, Object>> inquiriesWithLowestBid = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             for (int i = 0; i < parameters.size(); i++) {
@@ -309,15 +397,23 @@ public class InquiryDBUtils {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                Inquiry inquiry = mapResultSetToInquiry(resultSet);
-                inquiries.add(inquiry);
+                Inquiry inquiry = mapResultSetToInquiry(resultSet); // Existing method
+                double lowestBidAmount = resultSet.getDouble("lowestBidAmount");
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("inquiry", inquiry);
+                result.put("lowestBidAmount", lowestBidAmount);
+
+                inquiriesWithLowestBid.add(result);
             }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error searching inquiries", e);
             throw new RuntimeException(e);
         }
-        return inquiries;
+        return inquiriesWithLowestBid;
     }
+
+
 
 }
 

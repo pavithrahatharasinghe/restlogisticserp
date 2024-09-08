@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Response;
 import org.example.restlogisticserp.database.CompanyDBUtils;
 import org.example.restlogisticserp.models.Company;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error creating company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -38,6 +41,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error retrieving companies", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -51,6 +56,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error retrieving basic info of companies", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -68,6 +75,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error retrieving company by ID", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -82,6 +91,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -95,6 +106,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error deleting company", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -109,6 +122,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating company basic details", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -123,6 +138,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating company address", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -137,6 +154,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating company other details", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -151,6 +170,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating social media profiles", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -165,6 +186,8 @@ public class CompanyServices {
         } catch (RuntimeException e) {
             logger.log(Level.SEVERE, "Error updating company logo", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -5,8 +5,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.restlogisticserp.database.UserDBUtils;
 import org.example.restlogisticserp.models.User;
+import org.example.restlogisticserp.models.UserPasswordUpdateRequest;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -42,7 +44,7 @@ public class UserServices {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(User user) {
+    public Response createUser(User user) throws SQLException {
         User newUser = UserDBUtils.createUser(user);
         if (newUser != null) {
             return Response.ok(newUser).build();
@@ -112,7 +114,7 @@ public class UserServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateUserProfile(
             @PathParam("userId") int userId,
-            String profilePicturePath) {
+            String profilePicturePath) throws SQLException {
 
         UserDBUtils.updateUserProfilePicturePath(userId, profilePicturePath);
         User updatedUser = UserDBUtils.getUserById(userId);
@@ -129,7 +131,7 @@ public class UserServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateUserProfile(
             @PathParam("userId") int userId,
-            User user) {
+            User user) throws SQLException {
 
         UserDBUtils.updateUserProfile(userId, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getAboutMe());
         User updatedUser = UserDBUtils.getUserById(userId);
@@ -146,17 +148,63 @@ public class UserServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateUserPassword(
             @PathParam("userId") int userId,
-            @QueryParam("password") String newPassword) {
+            UserPasswordUpdateRequest passwordUpdateRequest) {  // Accept a custom object for JSON payload
 
-        String hashedPassword = hashPassword(newPassword);
-        UserDBUtils.updateUserPassword(userId, hashedPassword);
-        return Response.ok("Password updated successfully").build();
+        try {
+            String currentPassword = passwordUpdateRequest.getCurrentPassword();
+            String newPassword = passwordUpdateRequest.getNewPassword();
+            String confirmPassword = passwordUpdateRequest.getConfirmPassword();
+
+            // Step 1: Check if any password field is null
+            if (currentPassword == null || newPassword == null || confirmPassword == null) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("All password fields must be provided.").build();
+            }
+
+            // Step 2: Check if new password and confirm password match
+            if (!newPassword.equals(confirmPassword)) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("New password and confirm password do not match.").build();
+            }
+
+            // Step 3: Retrieve the current stored password hash from the database
+            String storedHashedPassword = UserDBUtils.getUserPassword(userId);
+
+            // Step 4: Verify that the current password provided matches the stored password
+            if (!verifyPassword(currentPassword, storedHashedPassword)) {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Current password is incorrect.").build();
+            }
+
+            // Step 5: Hash the new password
+            String hashedNewPassword = hashPassword(newPassword);
+
+            // Step 6: Update the user's password in the database
+            UserDBUtils.updateUserPassword(userId, hashedNewPassword);
+
+            return Response.ok("Password updated successfully").build();
+
+        } catch (SQLException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error updating password.").build();
+        }
     }
+
+
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+
+    public static boolean verifyPassword(String plainPassword, String hashedPassword) {
+        // Implement your password verification logic here
+        // For example, using BCrypt:
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+
+
+
 
     @GET
     @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserById(@PathParam("userId") int userId) {
+    public Response getUserById(@PathParam("userId") int userId) throws SQLException {
         User user = UserDBUtils.getUserById(userId);
         if (user != null) {
             return Response.ok(user).build();
@@ -165,16 +213,14 @@ public class UserServices {
         }
     }
 
-    private String hashPassword(String password) {
-        return password; // Replace with actual hashed password
-    }
+
 
     //add new user
     @POST
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addUser(User user) {
+    public Response addUser(User user) throws SQLException {
         User newUser = UserDBUtils.createUser(user);
         if (newUser != null) {
             return Response.ok(newUser).build();
@@ -188,7 +234,7 @@ public class UserServices {
     @Path("/update")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateUser(User user) {
+    public Response updateUser(User user) throws SQLException {
         User updatedUser = UserDBUtils.updateUser(user);
         if (updatedUser != null) {
             return Response.ok(updatedUser).build();

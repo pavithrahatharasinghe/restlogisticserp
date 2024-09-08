@@ -19,7 +19,7 @@ public class SystemLogDBUtils {
     static {
         try {
             connection = DatabaseConnection.getInstance().getConnection();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error establishing database connection", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
