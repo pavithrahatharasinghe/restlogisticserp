@@ -23,7 +23,7 @@ public class Inquiry {
     private Boolean dangerousGoods;
     private String freightTerm;
     private String incoTerm;
-
+    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date preferredDateOfArrival;
 
