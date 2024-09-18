@@ -19,6 +19,12 @@ public class DatabaseConnection {
             config.setPassword("mxxnh5bt8ay4ok0l");
             config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
+//            config.setJdbcUrl("jdbc:mysql://localhost:3306/erp_db");
+//            config.setUsername("root");
+//            config.setPassword("shippingerp123");
+//            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+
             // Recommended HikariCP settings
             config.setMaximumPoolSize(10);  // Maximum number of connections in the pool
             config.setMinimumIdle(5);  // Minimum number of idle connections in the pool
