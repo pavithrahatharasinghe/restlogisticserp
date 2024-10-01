@@ -16,9 +16,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <java.version>17</java.version>
         <junit.version>5.8.2</junit.version>
+        <jakarta.mail.version>2.0.1</jakarta.mail.version>
     </properties>
-
-
 
 
     <dependencies>
@@ -93,7 +92,16 @@
             <artifactId>HikariCP</artifactId>
             <version>5.0.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>${jakarta.mail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>${jakarta.mail.version}</version>
+        </dependency>
 
 
     </dependencies>
@@ -120,7 +128,9 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>copy</goal></goals>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
