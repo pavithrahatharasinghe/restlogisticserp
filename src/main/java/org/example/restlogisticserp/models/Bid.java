@@ -11,7 +11,6 @@ public class Bid {
     private Integer createdCompanyId; // Foreign key to Company
     private BigDecimal amount;
     
-    
     private String status;
     private Boolean isAccepted;
     private Boolean isFinalized;

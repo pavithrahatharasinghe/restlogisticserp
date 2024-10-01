@@ -14,15 +14,16 @@ public class DatabaseConnection {
         try {
             // HikariCP Configuration
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://m7nj9dclezfq7ax1.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/jtgzcb7cdfi5qvtx?useSSL=false");
-            config.setUsername("i41s2x37chsw1lk4");
-            config.setPassword("mxxnh5bt8ay4ok0l");
-            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-//            config.setJdbcUrl("jdbc:mysql://localhost:3306/erp_db");
-//            config.setUsername("root");
-//            config.setPassword("shippingerp123");
+//            config.setJdbcUrl("jdbc:mysql://m7nj9dclezfq7ax1.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/jtgzcb7cdfi5qvtx?useSSL=false");
+//            config.setUsername("i41s2x37chsw1lk4");
+//            config.setPassword("mxxnh5bt8ay4ok0l");
 //            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+            config.setJdbcUrl("jdbc:mysql://localhost:3306/erp_db");
+            config.setUsername("root");
+            config.setPassword("123456");
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
 
             // Recommended HikariCP settings

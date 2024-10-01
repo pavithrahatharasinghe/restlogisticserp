@@ -93,6 +93,7 @@ public class UserDBUtils {
         }
     }
 
+
     public static User getUserById(int userId) throws SQLException {
         checkConnection();
         String query = "SELECT * FROM users WHERE user_id = ?";
