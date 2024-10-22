@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import static org.example.restlogisticserp.DatabaseConnection.getConnection;
+
 public class UserDBUtils {
     private static final Logger logger = Logger.getLogger(UserDBUtils.class.getName());
     private static Connection connection;
@@ -45,6 +47,7 @@ public class UserDBUtils {
                     resultSet.getInt("user_id"),
                     resultSet.getString("email"),
                     resultSet.getString("role"),
+                    resultSet.getString("status"),
                     resultSet.getString("first_name"),
                     resultSet.getString("last_name"),
                     resultSet.getString("title"),
@@ -73,6 +76,7 @@ public class UserDBUtils {
                             resultSet.getInt("user_id"),
                             resultSet.getString("email"),
                             resultSet.getString("role"),
+                            resultSet.getString("status"),
                             resultSet.getString("first_name"),
                             resultSet.getString("last_name"),
                             resultSet.getString("title"),
@@ -105,6 +109,8 @@ public class UserDBUtils {
                         resultSet.getInt("user_id"),
                         resultSet.getString("email"),
                         resultSet.getString("role"),
+                        resultSet.getString("status"),
+
                         resultSet.getString("first_name"),
                         resultSet.getString("last_name"),
                         resultSet.getString("title"),
@@ -181,16 +187,17 @@ public class UserDBUtils {
     }
 
 
-    public static void updateUserProfile(int userId, String firstName, String lastName, String email, String phoneNumber, String aboutMe) throws SQLException {
+    public static void updateUserProfile(int userId, String title, String firstName, String lastName, String email, String phoneNumber, String aboutMe) throws SQLException {
         checkConnection();
-        String updateQuery = "UPDATE users SET first_name = ?, last_name = ?, email = ?, phone_number = ?, about_me = ? WHERE user_id = ?";
+        String updateQuery = "UPDATE users SET title = ?, first_name = ?, last_name = ?, email = ?, phone_number = ?, about_me = ? WHERE user_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
-            ps.setString(1, firstName);
-            ps.setString(2, lastName);
-            ps.setString(3, email);
-            ps.setString(4, phoneNumber);
-            ps.setString(5, aboutMe);
-            ps.setInt(6, userId);
+            ps.setString(1, title);         // Set title parameter
+            ps.setString(2, firstName);     // Set first name parameter
+            ps.setString(3, lastName);      // Set last name parameter
+            ps.setString(4, email);         // Set email parameter
+            ps.setString(5, phoneNumber);   // Set phone number parameter
+            ps.setString(6, aboutMe);
+            ps.setInt(7, userId);           // Set user ID parameter
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Error updating user profile", e);
@@ -300,4 +307,21 @@ public class UserDBUtils {
             throw new RuntimeException("Error updating user profile picture path", e);
         }
     }
+
+
+    // Change user status
+    public static void changeUserStatus(int userId, String status) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET status = ? WHERE user_id = ?"; // Use ? for parameter binding
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, status);  // Set the status
+            ps.setInt(2, userId);      // Set the userId
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating user status", e);
+            throw new RuntimeException("Error updating user status", e);
+        }
+    }
+
+
 }
