@@ -134,7 +134,7 @@ public class UserServices {
             User user) throws SQLException {
 
         // Include title when calling the database method
-        UserDBUtils.updateUserProfile(userId, user.getTitle(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),user.getAboutMe());
+        UserDBUtils.updateUserProfile(userId, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),user.getAboutMe());
         User updatedUser = UserDBUtils.getUserById(userId);
         if (updatedUser != null) {
             return Response.ok(updatedUser).build();
