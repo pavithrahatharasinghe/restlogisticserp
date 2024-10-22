@@ -133,7 +133,8 @@ public class UserServices {
             @PathParam("userId") int userId,
             User user) throws SQLException {
 
-        UserDBUtils.updateUserProfile(userId, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getAboutMe());
+        // Include title when calling the database method
+        UserDBUtils.updateUserProfile(userId, user.getTitle(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),user.getAboutMe());
         User updatedUser = UserDBUtils.getUserById(userId);
         if (updatedUser != null) {
             return Response.ok(updatedUser).build();
@@ -141,6 +142,7 @@ public class UserServices {
             return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
         }
     }
+
 
     @PUT
     @Path("/{userId}/password")
@@ -240,6 +242,31 @@ public class UserServices {
             return Response.ok(updatedUser).build();
         } else {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("User update failed").build();
+        }
+    }
+    @PUT
+    @Path("/{userId}/status")
+    public Response updateUserStatus(@PathParam("userId") int userId, @QueryParam("status") String status) {
+        // Validate the status
+        if (!"active".equals(status) && !"inactive".equals(status)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Invalid status value. Use 'active' or 'inactive'.\"}")
+                    .build();
+        }
+
+        try {
+            UserDBUtils.changeUserStatus(userId, status); // Call your existing method
+            return Response.ok("{\"message\": \"User status updated successfully\"}").build();
+        } catch (SQLException e) {
+            // Handle SQL exception
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Failed to update user status\"}")
+                    .build();
+        } catch (RuntimeException e) {
+            // Handle runtime exception
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
         }
     }
 }

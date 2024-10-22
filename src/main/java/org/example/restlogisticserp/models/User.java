@@ -63,10 +63,11 @@ public class User {
     }
 
 
-    public User(int userId, String email, String role, String firstName, String lastName, String title, String aboutMe, String phoneNumber, String profilePic, boolean emailVerified, int companyId) {
+    public User(int userId, String email, String role,String status, String firstName, String lastName, String title, String aboutMe, String phoneNumber, String profilePic, boolean emailVerified, int companyId) {
         this.userId = userId;
         this.email = email;
         this.role = role;
+        this.status=status;
         this.firstName = firstName;
         this.lastName = lastName;
         this.title = title;
@@ -77,6 +78,8 @@ public class User {
         this.companyId = companyId;
     }
 
+    public User(int userId, String email, String role, String firstName, String lastName, String title, String aboutMe, String phoneNumber, String profilePic, boolean emailVerified, int companyId) {
+    }
 
 
     public int getUserId() {

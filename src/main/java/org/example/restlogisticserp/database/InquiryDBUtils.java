@@ -413,6 +413,24 @@ public class InquiryDBUtils {
         return inquiriesWithLowestBid;
     }
 
+    // Fetch total inquiries
+    public static int getTotalInquiries() throws SQLException {
+        checkConnection();
+        String query = "SELECT COUNT(*) FROM Inquiries";
+
+        try (PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                return 0; // In case the result set is empty
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching total inquiries", e);
+            throw new RuntimeException(e);
+        }
+    }
 
 
 }

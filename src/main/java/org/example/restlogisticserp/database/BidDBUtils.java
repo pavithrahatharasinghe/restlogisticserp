@@ -163,17 +163,27 @@ public class BidDBUtils {
 
     public static String closeBid(long bidId) throws SQLException {
         checkConnection();
+
+        // Update the accepted bid status
         String updateBidQuery = "UPDATE bids SET status = 'accepted' WHERE bid_id = ?";
-        String updateInquiryQuery = "UPDATE Inquiries SET status = 'closed' WHERE inquiry_id = ?";
+
+        // Update the inquiry status to closed
+        String updateInquiryQuery = "UPDATE inquiries SET status = 'closed' WHERE inquiry_id = ?";
+
+        // Update other bids to closed
+        String closeOtherBidsQuery = "UPDATE bids SET status = 'rejected' WHERE inquiry_id = ? AND bid_id != ?";
 
         try (PreparedStatement updateBidStatement = connection.prepareStatement(updateBidQuery);
-             PreparedStatement updateInquiryStatement = connection.prepareStatement(updateInquiryQuery)) {
+             PreparedStatement updateInquiryStatement = connection.prepareStatement(updateInquiryQuery);
+             PreparedStatement closeOtherBidsStatement = connection.prepareStatement(closeOtherBidsQuery)) {
 
             connection.setAutoCommit(false);
 
+            // Step 1: Update the accepted bid
             updateBidStatement.setLong(1, bidId);
             updateBidStatement.executeUpdate();
 
+            // Step 2: Fetch the bid details
             Bid bid = fetchBidById(bidId);
             if (bid == null) {
                 connection.rollback();
@@ -181,9 +191,16 @@ public class BidDBUtils {
             }
             long inquiryId = bid.getInquiryId();
 
+            // Step 3: Update the inquiry status
             updateInquiryStatement.setLong(1, inquiryId);
             updateInquiryStatement.executeUpdate();
 
+            // Step 4: Close all other bids for the same inquiry
+            closeOtherBidsStatement.setLong(1, inquiryId);
+            closeOtherBidsStatement.setLong(2, bidId);
+            closeOtherBidsStatement.executeUpdate();
+
+            // Step 5: Commit the transaction
             connection.commit();
             return "Bid closed successfully.";
         } catch (SQLException e) {
@@ -196,6 +213,7 @@ public class BidDBUtils {
             return "Error closing bid: " + e.getMessage();
         }
     }
+
 
     public static Bid fetchBidById(long bidId) throws SQLException {
         checkConnection();
@@ -246,10 +264,32 @@ public class BidDBUtils {
 
     public static BidSummary fetchBidsSummaryCustomerCompany(Long companyId) throws SQLException {
         checkConnection();
-        String query = "SELECT sum(case when status = 'ongoing' then 1 else 0 end) as ongoing_count, sum(case when status = 'expired' then 1 else 0 end) as expired_count, sum(case when status = 'accepted' then 1 else 0 end) as accepted_count, sum(case when status = 'rejected' then 1 else 0 end) as rejected_count, count(*) as total_count FROM bids WHERE inquiry_owner_company_id = ?";
+
+        // Define the base query
+        String query;
+
+        // Check if companyId is null
+        if (companyId == null) {
+            // Modify the query to fetch totals across all bids (if that's the intended behavior)
+            query = "SELECT sum(case when status = 'ongoing' then 1 else 0 end) as ongoing_count, "
+                    + "sum(case when status = 'expired' then 1 else 0 end) as expired_count, "
+                    + "sum(case when status = 'accepted' then 1 else 0 end) as accepted_count, "
+                    + "sum(case when status = 'rejected' then 1 else 0 end) as rejected_count, "
+                    + "count(*) as total_count FROM bids"; // Removed WHERE clause
+        } else {
+            // Original query to filter by companyId
+            query = "SELECT sum(case when status = 'ongoing' then 1 else 0 end) as ongoing_count, "
+                    + "sum(case when status = 'expired' then 1 else 0 end) as expired_count, "
+                    + "sum(case when status = 'accepted' then 1 else 0 end) as accepted_count, "
+                    + "sum(case when status = 'rejected' then 1 else 0 end) as rejected_count, "
+                    + "count(*) as total_count FROM bids WHERE inquiry_owner_company_id = ?";
+        }
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, companyId);
+            // Set the parameter only if companyId is not null
+            if (companyId != null) {
+                statement.setLong(1, companyId);
+            }
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -262,6 +302,7 @@ public class BidDBUtils {
 
         return null;
     }
+
 
     public static List<Bid> fetchBidsForCompanyAndInquiry(Integer companyId, Integer inquiryId) throws SQLException {
         checkConnection();
