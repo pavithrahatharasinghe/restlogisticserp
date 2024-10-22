@@ -413,6 +413,7 @@ public class InquiryDBUtils {
         return inquiriesWithLowestBid;
     }
 
+
     // Fetch total inquiries
     public static int getTotalInquiries() throws SQLException {
         checkConnection();
@@ -431,7 +432,6 @@ public class InquiryDBUtils {
             throw new RuntimeException(e);
         }
     }
-
 
 }
 

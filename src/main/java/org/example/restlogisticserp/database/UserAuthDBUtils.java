@@ -66,6 +66,8 @@ public class UserAuthDBUtils {
                             userResultSet.getInt("user_id"),
                             userResultSet.getString("email"),
                             userResultSet.getString("role"),
+                            userResultSet.getString("status"),
+
                             userResultSet.getString("first_name"),
                             userResultSet.getString("last_name"),
                             userResultSet.getString("title"),
