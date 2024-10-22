@@ -300,4 +300,20 @@ public class UserDBUtils {
             throw new RuntimeException("Error updating user profile picture path", e);
         }
     }
+
+    // Change user status
+    public static void changeUserStatus(int userId, String status) throws SQLException {
+        checkConnection();
+        String updateQuery = "UPDATE users SET status = ? WHERE user_id = ?"; // Use ? for parameter binding
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, status);  // Set the status
+            ps.setInt(2, userId);      // Set the userId
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating user status", e);
+            throw new RuntimeException("Error updating user status", e);
+        }
+    }
+
+
 }
