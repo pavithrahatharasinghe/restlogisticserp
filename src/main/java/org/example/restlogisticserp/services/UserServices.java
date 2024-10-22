@@ -134,7 +134,7 @@ public class UserServices {
             User user) throws SQLException {
 
         // Include title when calling the database method
-        UserDBUtils.updateUserProfile(userId, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),user.getAboutMe());
+        UserDBUtils.updateUserProfile(userId, user.getTitle(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),user.getAboutMe());
         User updatedUser = UserDBUtils.getUserById(userId);
         if (updatedUser != null) {
             return Response.ok(updatedUser).build();
@@ -269,4 +269,25 @@ public class UserServices {
                     .build();
         }
     }
+
+    // UserResource.java
+
+    @GET
+    @Path("/company/{companyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsersByCompanyId(@PathParam("companyId") int companyId) {
+        try {
+            List<User> users = UserDBUtils.getUsersByCompanyId(companyId);
+            if (users.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).entity("No users found for this company").build();
+            }
+            return Response.ok(users).build(); // Return the list of users
+        } catch (RuntimeException e) {
+            logger.log(Level.SEVERE, "Error retrieving users by company ID", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

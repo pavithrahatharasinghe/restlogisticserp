@@ -2,6 +2,8 @@ package org.example.restlogisticserp.services;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.example.restlogisticserp.database.InquiryDBUtils;
+import org.example.restlogisticserp.models.Inquiry;
 import org.example.restlogisticserp.models.InquiryRequest;
 import org.example.restlogisticserp.database.InquiryRequestDBUtils;
 import jakarta.ws.rs.*;
@@ -42,4 +44,20 @@ public class InquiryRequestServices {
                     .entity("Server error: " + e.getMessage()).build();
         }
     }
+
+
+    @GET
+    @Path("/company/{companyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getInquiriesForCompany(@PathParam("companyId") int companyId) {
+        try {
+            List<Inquiry> inquiries = InquiryDBUtils.fetchInquiriesForCompany(companyId);
+            return Response.ok(inquiries).build();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching inquiries for company", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Server error: " + e.getMessage()).build();
+        }
+    }
+
 }

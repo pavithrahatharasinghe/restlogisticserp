@@ -183,7 +183,12 @@ public class InquiryDBUtils {
     // Fetch published inquiries by company
     public static List<Inquiry> fetchInquiriesByCompany() throws SQLException {
         checkConnection();
-        String query = "SELECT Inquiries.*, COALESCE((SELECT MIN(amount) FROM bids WHERE bids.inquiry_id = Inquiries.inquiry_id), 0) AS lowest_bid_amount FROM Inquiries WHERE PublishedStatus = 'Published' ORDER BY Inquiries.created_at DESC";
+        String query = "SELECT Inquiries.*, COALESCE((SELECT MIN(amount) FROM bids WHERE bids.inquiry_id = Inquiries.inquiry_id), 0) AS lowest_bid_amount, "
+                + "CASE WHEN CURRENT_TIMESTAMP > Inquiries.cut_off_time THEN 'Expired' ELSE Inquiries.status END AS inquiry_status "
+                + "FROM Inquiries "
+                + "WHERE PublishedStatus = 'Published' AND status='Open' AND (CURRENT_TIMESTAMP <= Inquiries.cut_off_time) "  // Exclude expired inquiries
+                + "ORDER BY Inquiries.created_at DESC";
+
         List<Inquiry> inquiries = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -191,6 +196,7 @@ public class InquiryDBUtils {
 
             while (resultSet.next()) {
                 Inquiry inquiry = mapResultSetToInquiry(resultSet);
+                inquiry.setStatus(resultSet.getString("inquiry_status"));  // Set the custom status
                 inquiries.add(inquiry);
             }
         } catch (SQLException e) {
@@ -199,6 +205,7 @@ public class InquiryDBUtils {
         }
         return inquiries;
     }
+
 
     // Fetch inquiry by ID for company
     public static Inquiry fetchInquiryByIdByCompany(int inquiryId) throws SQLException {
@@ -432,6 +439,31 @@ public class InquiryDBUtils {
             throw new RuntimeException(e);
         }
     }
+
+    // Fetch inquiries for a specific company
+    public static List<Inquiry> fetchInquiriesForCompany(int companyId) throws SQLException {
+        checkConnection();
+        String query = "SELECT i.* FROM inquiries i " +
+                "JOIN inquiryRequests ir ON i.inquiry_id = ir.inquiry_id " +
+                "WHERE ir.company_id = ?";
+
+        List<Inquiry> inquiries = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, companyId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Inquiry inquiry = mapResultSetToInquiry(resultSet);
+                inquiries.add(inquiry);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching inquiries for company", e);
+            throw new RuntimeException(e);
+        }
+        return inquiries;
+    }
+
 
 }
 

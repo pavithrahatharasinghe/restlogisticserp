@@ -1,5 +1,7 @@
 package org.example.restlogisticserp.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
 
 public class InquiryRequest {
@@ -10,7 +12,11 @@ public class InquiryRequest {
     private boolean accepted;
     private long createdBy;
     private long updatedBy;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+
     private Timestamp createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+
     private Timestamp updatedAt;
 
     // Constructor

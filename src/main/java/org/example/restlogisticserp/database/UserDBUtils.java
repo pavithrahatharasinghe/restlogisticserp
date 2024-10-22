@@ -322,6 +322,43 @@ public class UserDBUtils {
             throw new RuntimeException("Error updating user status", e);
         }
     }
+    // UserDBUtils.java
+
+    private static User mapResultSetToUser(ResultSet resultSet) throws SQLException {
+        return new User(
+                resultSet.getInt("user_id"),               // Assuming user_id is an int
+                resultSet.getString("email"),
+                resultSet.getString("role"),
+                resultSet.getString("status"),
+                resultSet.getString("first_name"),
+                resultSet.getString("last_name"),
+                resultSet.getString("title"),
+                resultSet.getString("about_me"),
+                resultSet.getString("phone_number"),
+                resultSet.getString("profile_pic_base64"),
+                resultSet.getBoolean("email_verified"),
+                resultSet.getInt("company_id")
+        );
+    }
+
+
+    public static List<User> getUsersByCompanyId(long companyId) throws SQLException {
+        checkConnection();
+        String query = "SELECT * FROM users WHERE company_id = ?";
+        List<User> users = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, companyId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    users.add(mapResultSetToUser(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "SQL Error: " + e.getMessage(), e);
+            throw new RuntimeException("Error retrieving users by company ID: " + e.getMessage(), e);
+        }
+        return users;
+    }
 
 
 }

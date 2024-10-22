@@ -304,4 +304,8 @@ public class CompanyDBUtils {
             throw new RuntimeException("Error updating company logo: " + e.getMessage(), e);
         }
     }
+
+
+
+
 }

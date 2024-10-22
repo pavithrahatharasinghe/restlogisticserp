@@ -4,7 +4,9 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.restlogisticserp.database.CompanyDBUtils;
+import org.example.restlogisticserp.database.UserDBUtils;
 import org.example.restlogisticserp.models.Company;
+import org.example.restlogisticserp.models.User;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -190,4 +192,7 @@ public class CompanyServices {
             throw new RuntimeException(e);
         }
     }
+
+
+
 }
