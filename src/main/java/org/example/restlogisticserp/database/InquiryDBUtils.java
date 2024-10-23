@@ -440,17 +440,18 @@ public class InquiryDBUtils {
         }
     }
 
-    // Fetch inquiries for a specific company
-    public static List<Inquiry> fetchInquiriesForCompany(int companyId) throws SQLException {
+    // Fetch inquiries for a specific shipping company
+    public static List<Inquiry> fetchInquiriesForCompany(int shippingCompanyId) throws SQLException {
         checkConnection();
+        // Modify the query to select the inquiries based on the shipping company's ID
         String query = "SELECT i.* FROM inquiries i " +
                 "JOIN inquiryRequests ir ON i.inquiry_id = ir.inquiry_id " +
-                "WHERE ir.company_id = ?";
+                "WHERE ir.company_id = ?";  // This should refer to the shipping company ID
 
         List<Inquiry> inquiries = new ArrayList<>();
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, companyId);
+            statement.setInt(1, shippingCompanyId);  // Set the shipping company ID as parameter
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -458,11 +459,58 @@ public class InquiryDBUtils {
                 inquiries.add(inquiry);
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error fetching inquiries for company", e);
+            logger.log(Level.SEVERE, "Error fetching inquiries for shipping company", e);
             throw new RuntimeException(e);
         }
         return inquiries;
     }
+    public static int getTotalInquiriesByCompany(int companyId) throws SQLException {
+        checkConnection();
+        String query = "SELECT COUNT(*) AS total FROM Inquiries WHERE company_id = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, companyId);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt("total");
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching total inquiries by company", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<Inquiry> fetchInquiriesForCustomer(int companyId) throws SQLException {
+        checkConnection();
+
+        // SQL query to join inquiries with inquiryRequests and filter by company ID
+        String query = "SELECT i.* FROM inquiries i " +
+                "JOIN inquiryRequests ir ON i.inquiry_id = ir.inquiry_id " +
+                "WHERE i.company_id = ?";  // Filter inquiries by company_id in the inquiries table
+
+        List<Inquiry> inquiries = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, companyId);  // Set the company ID parameter
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Inquiry inquiry = mapResultSetToInquiry(resultSet);  // Map the ResultSet to Inquiry object
+                inquiries.add(inquiry);
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching inquiries for company", e);
+            throw new RuntimeException(e);
+        }
+
+        return inquiries;  // Return the list of inquiries
+    }
+
+
+
 
 
 }

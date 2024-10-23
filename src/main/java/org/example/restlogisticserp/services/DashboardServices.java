@@ -2,6 +2,7 @@ package org.example.restlogisticserp.services;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -55,4 +56,37 @@ public class DashboardServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
         }
     }
+
+    @GET
+    @Path("/companyadmin/{companyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDashboardDataForCompanyAdmin(@PathParam("companyId") int companyId) {
+        try {
+            // Fetch users specific to the company
+            List<User> users = UserDBUtils.getUsersByCompanyId(companyId);
+            int totalUsers = users.size();
+
+            // Fetch company-specific inquiries
+            int totalInquiries = InquiryDBUtils.getTotalInquiriesByCompany(companyId);
+
+            // Fetch company-specific bids
+            BidSummary bidSummary = BidDBUtils.fetchBidsSummaryCustomerCompany((long) companyId); // Pass companyId
+            int totalBids = bidSummary != null ? bidSummary.getTotalCount() : 0;
+
+            // Prepare response data
+            Map<String, Integer> dashboardData = new HashMap<>();
+            dashboardData.put("totalUsers", totalUsers);
+            dashboardData.put("totalInquiries", totalInquiries);
+            dashboardData.put("totalBids", totalBids);
+
+            return Response.ok(dashboardData).build();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching company admin dashboard data", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Server error: " + e.getMessage()).build();
+        }
+    }
+
+
+
+
 }

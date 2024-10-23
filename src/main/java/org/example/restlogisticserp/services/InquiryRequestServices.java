@@ -47,7 +47,7 @@ public class InquiryRequestServices {
 
 
     @GET
-    @Path("/company/{companyId}")
+    @Path("/shipping-company/{companyId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInquiriesForCompany(@PathParam("companyId") int companyId) {
         try {
@@ -58,6 +58,18 @@ public class InquiryRequestServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Server error: " + e.getMessage()).build();
         }
+    }
+
+    @GET
+    @Path("/customer-company/{companyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getInquiriesForCustomer(@PathParam("companyId") int companyId) {
+        try {        List<Inquiry> inquiries = InquiryDBUtils.fetchInquiriesForCustomer(companyId);
+            return Response.ok(inquiries).build();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error fetching inquiries for company", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Server error: " + e.getMessage()).build();    }
     }
 
 }
